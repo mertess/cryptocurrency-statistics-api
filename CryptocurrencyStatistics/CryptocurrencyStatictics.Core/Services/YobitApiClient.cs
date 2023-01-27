@@ -17,9 +17,10 @@ namespace CryptocurrencyStatictics.Core.Services
 
         public async Task<IYobitApiTickerResponse> GetDealInfoByCurrencies(Currencies currencies)
         {
-            var endpointRoute = "api/3/ticker/{0}";
+            var yobitCurrencies = YobitCurrenciesResolver.Resolve(currencies);
+            var endpointRoute = $"api/3/ticker/{yobitCurrencies}";
 
-            var currentDelay = TimeSpan.FromSeconds(1);
+            var currentDelay = TimeSpan.FromSeconds(3);
             var tries = 5;
 
             while (true)
@@ -28,9 +29,9 @@ namespace CryptocurrencyStatictics.Core.Services
                 {
                     return currencies switch
                     {
-                        Currencies.EthBtc => (await _httpClient.GetStringAsync(string.Format(endpointRoute, YobitCurrenciesResolver.Resolve(currencies)))).FromJson<YobitEthereumBitcoinResponse>(),
-                        Currencies.EthUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, YobitCurrenciesResolver.Resolve(currencies)))).FromJson<YobitEthereumDollarResponse>(),
-                        Currencies.BtcUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, YobitCurrenciesResolver.Resolve(currencies)))).FromJson<YobitBitcoinDollarResponse>(),
+                        Currencies.EthBtc => await MakeGetRequest<YobitEthereumBitcoinResponse>(endpointRoute),
+                        Currencies.EthUsd => await MakeGetRequest<YobitEthereumDollarResponse>(endpointRoute),
+                        Currencies.BtcUsd => await MakeGetRequest<YobitBitcoinDollarResponse>(endpointRoute),
                         _ => throw new ArgumentException()
                     };
                 }
@@ -45,6 +46,9 @@ namespace CryptocurrencyStatictics.Core.Services
                 }
             }
         }
+
+        private async Task<TResult> MakeGetRequest<TResult>(string endpointRoute) 
+            => (await _httpClient.GetStringAsync(endpointRoute)).FromJson<TResult>();
     }
 
     public static class YobitCurrenciesResolver
