@@ -8,6 +8,6 @@ namespace CryptocurrencyStatictics.Core.Db.DbModels
         [Required]
         public string Currencies { get; set; }
         public decimal LastCost { get; set; }
-        public DateTimeOffset UpdatedAtUtc { get; set; }
+        public DateTime UpdatedAtUtc { get; set; }
     }
 }

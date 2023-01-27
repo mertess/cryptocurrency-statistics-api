@@ -51,14 +51,14 @@ namespace CryptocurrencyStatistics.Api.BackgroundServices
             {
                 Currencies = YobitCurrenciesResolver.Resolve(currencies),
                 LastCost = response.DealInfo.LastCost,
-                UpdatedAtUtc = UnixTimeStampToDateTime(response.DealInfo.UpdatedAtUtc)
+                UpdatedAtUtc = UnixTimeStampToDateTimeUtc(response.DealInfo.UpdatedAtUtc)
             };
         }
 
-        private DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        private DateTime UnixTimeStampToDateTimeUtc(long unixTimeStamp)
         {
             DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+            dateTime = dateTime.AddSeconds(unixTimeStamp).ToUniversalTime();
             return dateTime;
         }
     }
