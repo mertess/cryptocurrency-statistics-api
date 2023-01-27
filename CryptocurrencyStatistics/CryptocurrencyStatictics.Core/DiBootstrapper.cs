@@ -1,4 +1,5 @@
 ﻿using CryptocurrencyStatictics.Core.Db;
+using CryptocurrencyStatictics.Core.Db.Repositories;
 using CryptocurrencyStatictics.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,9 @@ namespace CryptocurrencyStatictics.Core
                     options => options.MigrationsAssembly("CryptocurrencyStatistics.Migrations")
                 );
             });
+
+            services.AddScoped<DealRepository>();
+            services.AddScoped<UnitOfWork>();
         }
     }
 }

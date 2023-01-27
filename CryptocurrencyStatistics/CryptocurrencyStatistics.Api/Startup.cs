@@ -1,6 +1,7 @@
 using CryptocurrencyStatictics.Core;
 using CryptocurrencyStatictics.Core.Db;
 using CryptocurrencyStatictics.Core.Services;
+using CryptocurrencyStatistics.Api.BackgroundServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,8 @@ namespace CryptocurrencyStatistics.Api
             services.AddHttpClient<YobitApiClient>(options => 
                 options.BaseAddress = new Uri(Configuration["YobitApiBaseUrl"])
             );
+
+            services.AddHostedService<CryptocurrencyStatisticsDownloader>();
 
             services.AddControllers();
         }

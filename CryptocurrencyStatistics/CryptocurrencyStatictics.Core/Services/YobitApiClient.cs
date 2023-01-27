@@ -20,13 +20,31 @@ namespace CryptocurrencyStatictics.Core.Services
         {
             var endpointRoute = "api/3/ticker/{0}";
 
-            return currency switch
+            var currentDelay = TimeSpan.FromSeconds(1);
+            var tries = 5;
+
+            while(true)
             {
-                Currency.EthBtc => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "eth_btc"))).FromJson<YobitEthereumBitcoinResponse>(),
-                Currency.EthUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "eth_usd"))).FromJson<YobitEthereumDollarResponse>(),
-                Currency.BtcUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "btc_usd"))).FromJson<YobitBitcoinDollarResponse>(),
-                _ => throw new ArgumentException()
-            };
+                try
+                {
+                    return currency switch
+                    {
+                        Currency.EthBtc => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "eth_btc"))).FromJson<YobitEthereumBitcoinResponse>(),
+                        Currency.EthUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "eth_usd"))).FromJson<YobitEthereumDollarResponse>(),
+                        Currency.BtcUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "btc_usd"))).FromJson<YobitBitcoinDollarResponse>(),
+                        _ => throw new ArgumentException()
+                    };
+                }
+                catch
+                {
+                    if (--tries == 0)
+                        throw;
+
+                    await Task.Delay(currentDelay);
+
+                    currentDelay *= 2;
+                }
+            }
         }
     }
 
