@@ -1,11 +1,9 @@
 ﻿using CryptocurrencyStatictics.Core.Db.DbModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace CryptocurrencyStatictics.Core.Db.Repositories
 {
@@ -43,19 +41,26 @@ namespace CryptocurrencyStatictics.Core.Db.Repositories
                 Delete(entity);
         }
 
-        public TEntity FirstOrDefault(Expression<Func<TEntity, bool>> where)
+        public TEntity FirstOrDefault(Func<TEntity, bool> where)
         {
-            return _dbSet.FirstOrDefault(where);
+            // По какой то причине на постгрес провайдере не позволяет составные условия выполнять на стороне бд, поэтому добавил ToList()
+            // что явно скажется на производительности
+            return _dbSet.ToList().FirstOrDefault(where);
         }
 
         public IQueryable<TEntity> GetAll()
         {
-            return _dbSet.AsQueryable();
+            return _dbSet;
         }
 
         public IQueryable<TEntity> GetMany(Expression<Func<TEntity, bool>> where)
         {
             return _dbSet.Where(where);
+        }
+
+        public TEntity LastOrDefault(Func<TEntity, bool> where)
+        {
+            return _dbSet.ToList().LastOrDefault(where);
         }
     }
 }

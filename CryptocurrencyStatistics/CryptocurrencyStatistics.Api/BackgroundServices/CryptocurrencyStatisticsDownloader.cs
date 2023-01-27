@@ -32,9 +32,9 @@ namespace CryptocurrencyStatistics.Api.BackgroundServices
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var enumValue in Enum.GetValues(typeof(Currency)).Cast<Currency>())
+                foreach (var currencies in Enum.GetValues(typeof(Currencies)).Cast<Currencies>())
                 {
-                    dealRepository.Create(await DownloadDealInfo(enumValue, yobitApiClient));
+                    dealRepository.Create(await DownloadDealInfo(currencies, yobitApiClient));
                 }
 
                 await unitOfWork.SaveChangesAsync(stoppingToken);
@@ -43,13 +43,13 @@ namespace CryptocurrencyStatistics.Api.BackgroundServices
             }
         }
 
-        private async Task<Deal> DownloadDealInfo(Currency currency, YobitApiClient yobitApiClient)
+        private async Task<Deal> DownloadDealInfo(Currencies currencies, YobitApiClient yobitApiClient)
         {
-            var response = await yobitApiClient.GetDealInfoByCurrency(currency);
+            var response = await yobitApiClient.GetDealInfoByCurrencies(currencies);
 
             return new Deal
             {
-                Currencies = Enum.GetName(typeof(Currency), currency),
+                Currencies = YobitCurrenciesResolver.Resolve(currencies),
                 LastCost = response.DealInfo.LastCost,
                 UpdatedAtUtc = UnixTimeStampToDateTime(response.DealInfo.UpdatedAtUtc)
             };

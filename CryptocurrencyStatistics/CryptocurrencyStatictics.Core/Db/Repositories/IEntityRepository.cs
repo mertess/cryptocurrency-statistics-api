@@ -15,6 +15,7 @@ namespace CryptocurrencyStatictics.Core.Db.Repositories
         void Delete(IEnumerable<TEntity> entities);
         IQueryable<TEntity> GetAll();
         IQueryable<TEntity> GetMany(Expression<Func<TEntity, bool>> where);
-        TEntity FirstOrDefault(Expression<Func<TEntity, bool>> where);
+        TEntity FirstOrDefault(Func<TEntity, bool> where);
+        TEntity LastOrDefault(Func<TEntity, bool> where);
     }
 }

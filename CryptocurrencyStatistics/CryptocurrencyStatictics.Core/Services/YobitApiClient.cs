@@ -1,5 +1,4 @@
 ﻿using CryptocurrencyStatictics.Core.Common.Extensions;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
@@ -16,22 +15,22 @@ namespace CryptocurrencyStatictics.Core.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IYobitApiTickerResponse> GetDealInfoByCurrency(Currency currency)
+        public async Task<IYobitApiTickerResponse> GetDealInfoByCurrencies(Currencies currencies)
         {
             var endpointRoute = "api/3/ticker/{0}";
 
             var currentDelay = TimeSpan.FromSeconds(1);
             var tries = 5;
 
-            while(true)
+            while (true)
             {
                 try
                 {
-                    return currency switch
+                    return currencies switch
                     {
-                        Currency.EthBtc => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "eth_btc"))).FromJson<YobitEthereumBitcoinResponse>(),
-                        Currency.EthUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "eth_usd"))).FromJson<YobitEthereumDollarResponse>(),
-                        Currency.BtcUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, "btc_usd"))).FromJson<YobitBitcoinDollarResponse>(),
+                        Currencies.EthBtc => (await _httpClient.GetStringAsync(string.Format(endpointRoute, YobitCurrenciesResolver.Resolve(currencies)))).FromJson<YobitEthereumBitcoinResponse>(),
+                        Currencies.EthUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, YobitCurrenciesResolver.Resolve(currencies)))).FromJson<YobitEthereumDollarResponse>(),
+                        Currencies.BtcUsd => (await _httpClient.GetStringAsync(string.Format(endpointRoute, YobitCurrenciesResolver.Resolve(currencies)))).FromJson<YobitBitcoinDollarResponse>(),
                         _ => throw new ArgumentException()
                     };
                 }
@@ -45,6 +44,31 @@ namespace CryptocurrencyStatictics.Core.Services
                     currentDelay *= 2;
                 }
             }
+        }
+    }
+
+    public static class YobitCurrenciesResolver
+    {
+        public static string Resolve(Currencies currencies)
+        {
+            return currencies switch
+            {
+                Currencies.EthBtc => "eth_btc",
+                Currencies.EthUsd => "eth_usd",
+                Currencies.BtcUsd => "btc_usd",
+                _ => throw new ArgumentException()
+            };
+        }
+
+        public static Currencies Resolve(string currencies)
+        {
+            return currencies switch
+            {
+                "eth_btc" => Currencies.EthBtc,
+                "eth_usd" => Currencies.EthUsd,
+                "btc_usd" => Currencies.BtcUsd,
+                _ => throw new ArgumentException()
+            };
         }
     }
 
@@ -79,7 +103,7 @@ namespace CryptocurrencyStatictics.Core.Services
         public long UpdatedAtUtc { get; set; }
     }
 
-    public enum Currency
+    public enum Currencies
     {
         EthUsd,
         EthBtc,
